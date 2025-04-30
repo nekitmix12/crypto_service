@@ -1,0 +1,17 @@
+spring:
+  application:
+    name: crypto_service
+  datasource:
+    url: jdbc:postgresql://localhost:5432/certificates
+    password: zex312ZEX
+    username: nekit
+    driver-class-name: org.postgresql.Driver
+  jpa:
+    hibernate:
+      ddl-auto: validate
+  flyway:
+    locations: classpath:db/migration
+  baseline-on-migrate: true
+
+server:
+  port: 8192

@@ -8,7 +8,6 @@ import org.springframework.http.ResponseEntity
 import org.springframework.stereotype.Controller
 import org.springframework.web.bind.annotation.*
 import org.springframework.web.multipart.MultipartFile
-import v_company.crypto_service.dto.CertificateDto
 import v_company.crypto_service.dto.UserDto
 import v_company.crypto_service.services.CertificateService
 import v_company.crypto_service.services.DigitalSignatureService
@@ -28,11 +27,15 @@ class DigitalSignatureController(
 
 
     @GetMapping("/sign", consumes = [MediaType.MULTIPART_FORM_DATA_VALUE])
-    fun singDoc(@RequestPart("user") userDto: UserDto,
-                @RequestPart("file") file: MultipartFile
+    fun signDoc(
+        @RequestPart("user") userDto: UserDto,
+        @RequestPart("file") file: MultipartFile,
+        @RequestParam(required = false) seedId: Long?,
+        @RequestParam(required = false) seedName: String?
     ): ResponseEntity<ByteArrayResource> {
         val privateKey = certificateService.getPrivateKey(userDto) ?: return ResponseEntity.status(404).build()
-        val (r, s) = digitalSignatureService.signMessage(privateKey, file.bytes)
+
+        val (r, s) = digitalSignatureService.signMessage(privateKey, file.bytes, seedId, seedName)
         val signatureBytes = r.toByteArray() + s.toByteArray()
         val signatureBase64 = Base64.getEncoder().encodeToString(signatureBytes)
         val headers = HttpHeaders().apply {
@@ -42,6 +45,9 @@ class DigitalSignatureController(
             add("X-Signature", signatureBase64)
             add("X-Signature-Algorithm", "ECDSA-secp256k1")
             add("X-Signature-Timestamp", Instant.now().toString())
+
+            seedId?.let { add("X-Signature-Seed-Id", it.toString()) }
+            seedName?.let { add("X-Signature-Seed-Name", it) }
         }
         return ResponseEntity.ok().headers(headers).body(ByteArrayResource(file.bytes))
     }

@@ -1,15 +1,11 @@
 import org.springframework.stereotype.Service
 import v_company.crypto_service.hashing.HashUtil
-import v_company.crypto_service.hashing.SeededParams
-import v_company.crypto_service.hashing.SeededParamsFactory
+import v_company.crypto_service.services.HashSeedService
 import java.math.BigInteger
 import java.nio.ByteBuffer
-import java.security.MessageDigest
-import java.util.*
-import kotlin.time.times
 
 @Service
-class CalculateService {
+class CalculateService(private val hashSeedService: HashSeedService) {
 
 
     fun inverseMod(k: BigInteger, p: BigInteger): BigInteger = k.modInverse(p)
@@ -69,13 +65,14 @@ class CalculateService {
     }
 
 
-    fun hashMessage(message: ByteArray): BigInteger {
-        val hashInt = HashUtil.hash(message, SeededParamsFactory.random())
+    fun hashMessage(message: ByteArray, seedId: Long? = null, seedName: String? = null): BigInteger {
+        val params = hashSeedService.getParams(seedId, seedName)
+
+        val hashInt = HashUtil.hash(message, params)
         val hash = ByteBuffer.allocate(Int.SIZE_BYTES).putInt(hashInt).array()
         val e = BigInteger(1, hash)
         return e.shiftRight(e.bitLength() - n.bitLength())
     }
-
 
     companion object {
         const val CURVE_NAME = "secp256k1"

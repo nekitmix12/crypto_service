@@ -12,4 +12,11 @@ CREATE TABLE keys (
     public_key_r TEXT NOT NULL,
     created_at TIMESTAMPTZ DEFAULT NOW()
 );
+
+CREATE TABLE hash_seeds(
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    seed Long NOT NULL,
+    FOREIGN KEY (user_id) REFERENCES users(id)
+)
+
 CREATE INDEX idx_users_name ON users(first_name, last_name);

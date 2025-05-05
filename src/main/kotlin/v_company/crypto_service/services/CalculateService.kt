@@ -3,6 +3,7 @@ import v_company.crypto_service.hashing.HashUtil
 import v_company.crypto_service.services.HashSeedService
 import java.math.BigInteger
 import java.nio.ByteBuffer
+import java.util.UUID
 
 @Service
 class CalculateService(private val hashSeedService: HashSeedService) {
@@ -65,8 +66,8 @@ class CalculateService(private val hashSeedService: HashSeedService) {
     }
 
 
-    fun hashMessage(message: ByteArray, seedId: Long? = null, seedName: String? = null): BigInteger {
-        val params = hashSeedService.getParams(seedId, seedName)
+    fun hashMessage(message: ByteArray, seedId: UUID): BigInteger {
+        val params = hashSeedService.getParams(seedId)
 
         val hashInt = HashUtil.hash(message, params)
         val hash = ByteBuffer.allocate(Int.SIZE_BYTES).putInt(hashInt).array()

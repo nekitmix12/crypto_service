@@ -13,10 +13,10 @@ import java.util.*
 @Table(name = "keys")
 data class KeyEntity(
     @Id
-    @Column val id: UUID  = UUID.randomUUID(),
+    @Column val id: UUID = UUID.randomUUID(),
     @Column val privateKey: String,
     @Column val publicKeyS: String,
     @Column val publicKeyR: String,
     @Column(name = "created_at")
-    val createdAt: Instant
+    val createdAt: Instant,
 )

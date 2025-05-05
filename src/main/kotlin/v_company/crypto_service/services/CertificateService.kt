@@ -10,11 +10,13 @@ import v_company.crypto_service.repository.KeyRepository
 import v_company.crypto_service.repository.UserRepository
 import java.math.BigInteger
 import java.time.Instant
+import java.util.UUID
 
 @Service
 class CertificateService(
     private val keyRepository: KeyRepository,
     private val userRepository: UserRepository,
+    private val hashSeedService: HashSeedService
 ) {
     @Transactional
     fun getPrivateKey(userDto: UserDto): BigInteger? {
@@ -23,13 +25,20 @@ class CertificateService(
         return keyRepository.findById(keyId).get().privateKey.toBigInteger()
     }
 
+    @Transactional
+    fun getKeys(userDto: UserDto) =
+        keyRepository.findById(
+            userRepository.findByFirstNameAndLastName(userDto.firstName, userDto.secondName)?.keyId!!
+        )
+
+
     fun createCertificate(userDto: UserDto, keys: Pair<BigInteger, Pair<BigInteger, BigInteger>>): CertificateDto {
         val key = keyRepository.save(
             KeyEntity(
                 privateKey = keys.first.toString(),
                 publicKeyR = keys.second.first.toString(),
                 publicKeyS = keys.second.second.toString(),
-                createdAt = Instant.now()
+                createdAt = Instant.now(),
             )
         )
         val user = userRepository.save(
@@ -37,9 +46,15 @@ class CertificateService(
                 firstName = userDto.firstName,
                 lastName = userDto.secondName,
                 createdAt = Instant.now(),
-                keyId = key.id
+                keyId = key.id,
+                seedId = null
             )
         )
+
+        val hashSeed = hashSeedService.generateSeed(user)
+        println("hashSeed: $hashSeed")
+        println("user: $user")
+        userRepository.save(user.copy(seedId = hashSeed.id))
         return CertificateDto(key.publicKeyR.toBigInteger() to key.publicKeyS.toBigInteger(), userDto)
     }
 }

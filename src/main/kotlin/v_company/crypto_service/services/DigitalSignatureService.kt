@@ -24,8 +24,6 @@ class DigitalSignatureService(
         ).seedId!!
 
         val z = calculateService.hashMessage(message, seedId)
-        println("hash2: $z")
-        println("hash2: $seedId")
         var r: BigInteger
         var s: BigInteger
 
@@ -51,15 +49,12 @@ class DigitalSignatureService(
         message: ByteArray,
         signature: Pair<BigInteger, BigInteger>,
     ): Boolean {
-        println(publicKey)
         val seedId = userRepository.findByKeyId(
             keyRepository.findByPublicKeys(publicKey.first.toString(), publicKey.second.toString())[0].id
         ).seedId!!
 
         val (r, s) = signature
         val z = calculateService.hashMessage(message, seedId)
-        println("hash: $z")
-        println("hash: $seedId")
 
         val w = calculateService.inverseMod(s, CalculateService.n)
         val u1 = z.multiply(w).mod(CalculateService.n)

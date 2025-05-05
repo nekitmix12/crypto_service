@@ -42,7 +42,7 @@ class DigitalSignatureController(
             digitalSignatureService.verifySignature(
                 keys.publicKeyR.toBigInteger() to keys.publicKeyS.toBigInteger(),
                 file.bytes,
-                BigInteger(rBytes) to BigInteger(sBytes)
+                BigInteger(1, rBytes) to BigInteger(1, sBytes)
             )
         )
     }
@@ -57,17 +57,7 @@ class DigitalSignatureController(
         val (r, s) = digitalSignatureService.signMessage(privateKey, file.bytes)
         val signatureBytes = r + s
         val signatureBase64 = Base64.getEncoder().encodeToString(signatureBytes)
-        println(signatureBase64)
 
-        val bytes = Base64.getDecoder().decode(signatureBase64)
-        val rBytes = bytes.sliceArray(0 until 32)
-        val sBytes = bytes.sliceArray(32 until 64)
-        val keys = certificateService.getKeys(userDto).get()
-        println(digitalSignatureService.verifySignature(
-            keys.publicKeyR.toBigInteger() to keys.publicKeyS.toBigInteger(),
-            file.bytes,
-            BigInteger(r) to BigInteger(s)
-        ))
         val headers = HttpHeaders().apply {
             contentType = MediaType.APPLICATION_PDF
             contentDisposition = ContentDisposition.attachment().build()
